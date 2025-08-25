@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 st.title('US Vehicle Advertisement Listings')
 
 
-df = pd.read_csv('./vehicles_us_cleaned.csv')
+df = pd.read_csv("vehicles_us_cleaned.csv")
 
 
 st.write(df)
