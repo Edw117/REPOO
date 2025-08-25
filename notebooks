@@ -1,1 +1,96 @@
+import pandas as pd
+import plotly.express as px
+import matplotlib.pyplot as plt
+import seaborn as sns
 
+df = pd.read_csv('../vehicles_us.csv')
+
+df.info()
+
+df.isnull().sum()
+
+df.head(15)
+
+fillna_and_int = ['is_4wd', 'cylinders', 'model_year', 'odometer']
+for i in fillna_and_int:
+  df[i] = df[i].fillna(0)
+  df[i] = df[i].astype(int)
+
+# Fill the missing paint color with unknown
+df["paint_color"] = df["paint_color"].fillna("unknown")
+
+def cylinder_check(row):
+    '''This function will check if the cylinder is missing and if it is it will fill it with the most common cylinder for that car model and year'''
+    if row["cylinders"] == 0:
+        cylinder = df.loc[df["model"] == row["model"]].loc[df["model_year"] == row["model_year"]]["cylinders"].unique()
+        for i in range(len(cylinder)):
+            if cylinder[i] != 0:
+                return cylinder[i]
+    return row["cylinders"]
+
+df["cylinders"] = df.apply(cylinder_check, axis=1)
+
+def odometer_check(row):
+    '''This function will check if the odometer is missing and if it is it will fill it with the most common odometer for that car model and year'''
+    if row["odometer"] == 0:
+        odometer = df.loc[df["model"] == row["model"]].loc[df["model_year"] == row["model_year"]].loc[df["type"] == row["type"]]["odometer"].unique()
+        for i in range(len(odometer)):
+            if odometer[i] != 0:
+                return odometer[i]
+    return row["odometer"]
+
+df["odometer"] = df.apply(odometer_check, axis=1)
+
+def model_year_check(row):
+    '''This function will check if the model year is missing and if it is it will fill it with the most common model year for that car model and year'''
+    if row["model_year"] == 0:
+        model_year = df.loc[df["model"] == row["model"]].loc[df["type"] == row["type"]]["model_year"].unique()
+        for i in range(len(model_year)):
+            if model_year[i] != 0:
+                return model_year[i]
+    return row["model_year"]
+
+df["model_year"] = df.apply(model_year_check, axis=1)
+
+    '''This function will check if the paint color is missing and if it is it will fill it with the most common paint color for that car model'''
+    if row["paint_color"] == "unknown":
+        paint_color = df.loc[df["model"] == row["model"]]["paint_color"].unique()
+        for i in range(len(paint_color)):
+            if paint_color[i] != "unknown":
+                return paint_color[i]
+    return row["paint_color"]
+
+df["paint_color"] = df.apply(paint_color_check, axis=1)
+
+df["manufacturer"] = df["model"].str.split(" ", n = 1, expand = True)[0]
+
+df["model_name"] = df["model"].str.split(" ", n = 1, expand = True)[1]
+
+df.drop(columns=["model"], inplace=True)
+
+df.info()
+
+fig, ax = plt.subplots(1, 2, figsize=(20, 5))
+sns.boxplot(x=df["price"], ax=ax[0])
+sns.boxplot(x=df["odometer"], ax=ax[1])
+plt.show()
+
+Q1 = df.quantile(0.25)
+Q3 = df.quantile(0.75)
+IQR = Q3 - Q1
+df = df[~((df < (Q1 - 1.5 * IQR)) |(df > (Q3 + 1.5 * IQR))).any(axis=1)]
+
+df["date_posted"] = pd.to_datetime(df["date_posted"], format='%Y-%m-%d')
+
+df.head(15)
+
+df.to_csv('../vehicles_us_cleaned.csv', index=False)
+
+fig = px.histogram(df, x="model_year", color="condition", hover_data=df.columns)
+fig.show()
+
+fig = px.histogram(df, x="manufacturer", title="Number of cars for each manufacturer")
+fig.show()
+
+fig = px.histogram(df, x="manufacturer", color="type", title="Number of cars for each manufacturer")
+fig.show()
