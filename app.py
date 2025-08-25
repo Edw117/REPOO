@@ -10,6 +10,9 @@ st.title('US Vehicle Advertisement Listings')
 df = pd.read_csv("vehicles_us_cleaned.csv")
 
 
+df["manufacturer"] = df["model"].str.split().str[0]
+
+
 st.write(df)
 
 
@@ -35,24 +38,17 @@ if normalized:
     fig.update_traces(opacity=0.75)
 
 fig.update_xaxes(title_text='Price')
-
 fig.update_yaxes(title_text='Percentage')
 
 st.plotly_chart(fig)
 
-
-
-
 st.subheader('Scatter plot matrix')
-
 
 x_axis = st.selectbox('X axis', df.columns, index=1)
 y_axis = st.selectbox('Y axis', df.columns, index=2)
-
 color = st.selectbox('Color', df.columns, index=3)
 
 st.subheader(f'Scatter plot matrix of {x_axis} and {y_axis} by {color}')
 
 fig = px.scatter_matrix(df, dimensions=[x_axis, y_axis], color=color)
-
 st.plotly_chart(fig)
