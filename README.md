@@ -14,3 +14,6 @@ Esto me hace parecer un profesional capaz de compartir su trabajo y colaborar co
 
 En resumen, no es solo un análisis de datos. Es la prueba de que puedo llevar una idea desde el inicio hasta el final,
 como lo haría un verdadero ingeniero de software.
+
+
+Enlace: https://nr2-yl93.onrender.com
